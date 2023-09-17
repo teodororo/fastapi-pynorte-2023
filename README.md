@@ -26,9 +26,17 @@ app = FastAPI()
 def main():
 	return {"hello":"world"}
 ```
+Para executar, assumindo que o arquivo se chama "main.py":
+```console
+uvicorn main:app --reload```
+Caso queira rodar em segundo plano, adicione "&" no final do comando. Há outras opções de parâmetros, por exemplo:
+```console
+uvicorn main:app --reload --host 0.0.0.0 --port 88 --workers 4 ... &```
+Saiba mais na [documentação oficial do Uvicorn](https://www.uvicorn.org/).
 Se rodarmos:
 
-```pytest --cov=. --cov-report=html```
+```console
+pytest --cov=. --cov-report=html```
 
 E abrimos o diretório "htmlcov", o arquivo "main_py.html" irá nos informar que nada foi testado.
 Então, crie um arquivo chamado "test_hello_world.py" e copie o seguinte _script_:
@@ -42,9 +50,10 @@ def test_hello_world():
 	assert response.status_code == 200
 	assert response.json() == {'hello': 'world'}
 ```
-Ao rodar o comando:
+Agora, ao rodar o comando:
 
-```pytest --cov=. --cov-report=html```
+```console
+pytest --cov=. --cov-report=html```
 
 O "main_py.html" estará todo verde.
 
@@ -52,4 +61,5 @@ O "main_py.html" estará todo verde.
 ## Troubleshooting
 Para parar o FastAPI:
 
-```fuser -k 8000/tcp```
+```console
+fuser -k 8000/tcp```
