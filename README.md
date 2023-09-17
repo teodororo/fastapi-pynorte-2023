@@ -11,7 +11,9 @@ pip3 install "fastapi[all]"
 ```console
 pip3 install pytest-cov
 ```
-
+```console
+pip3 install sqlalchemy
+```
 ## Agenda
 - [Hello, world!](#hello-world)
 - [Troubleshooting](#troubleshooting)
@@ -82,4 +84,5 @@ O "main_py.html" estará todo verde.
 Para parar o FastAPI:
 
 ```console
-fuser -k 8000/tcp```
+fuser -k 8000/tcp
+```
