@@ -16,6 +16,11 @@ pip3 install sqlalchemy
 ```
 ## Agenda
 - [Hello, world!](#hello-world)
+	- [Teste automático](#teste-automático)
+ 	- [Marcando rotas descontinuadas](#marcando-rotas-descontinuadas)
+	- [Dividindo as rotas com _tags_](#dividindo-as-rotas-com-tags)
+- [CRUD](#crud)
+  	- [Esqueleto do schema](#esqueleto-do-schema)
 - [Troubleshooting](#troubleshooting)
 
 ```Python
@@ -55,7 +60,7 @@ Para visualizar o .json do OpenAPI, acesse:
 http://0.0.0.0:8000/openapi.json
 ```
 Tudo isso foi gerado automaticamente.
-
+### Teste automático
 Continuando, se rodarmos:
 
 ```console
@@ -78,6 +83,158 @@ Agora, ao rodar o comando:
 pytest --cov=. --cov-report=html
 ```
 O "main_py.html" estará todo verde.
+### Marcando rotas descontinuadas
+É possível marcar uma rota como descontinuada.
+```Python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/", deprecated=True)
+def main():
+	return {"hello":"world"}
+```
+### Dividindo as rotas com _tags_
+É possível dividir as rotas com uso das _tags_. O FastAPI recomenda que seja criado um Enum para melhorar o gerenciamento.
+
+Lembrando, a ordem de escrita das rotas importa.
+```Python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/root",tags=["root"])
+def main():
+	return {"hello":"world"}
+
+@app.get("/", deprecated=True, tags=["descontinuada"])
+def main():
+	return {"hello":"world"}
+```
+## CRUD
+Vamos fazer o sistema de uma biblioteca com as seguintes tabelas:
+```SQL
+CREATE TABLE autores (
+        cpf VARCHAR NOT NULL, 
+        nome VARCHAR, 
+        PRIMARY KEY (cpf)
+)
+```
+
+```SQL
+CREATE TABLE livros (
+        isbn VARCHAR NOT NULL, 
+        titulo VARCHAR, 
+        PRIMARY KEY (isbn)
+)
+```
+```SQL
+CREATE TABLE livro_autor (
+        livro_isbn VARCHAR NOT NULL, 
+        autor_cpf VARCHAR NOT NULL, 
+        PRIMARY KEY (livro_isbn, autor_cpf), 
+        FOREIGN KEY(livro_isbn) REFERENCES livros (isbn), 
+        FOREIGN KEY(autor_cpf) REFERENCES autores (cpf)
+)
+```
+A chave primária da tabela livro_autor é uma chave conjunta das duas chaves estrangeiras. Essa tabela só existe porque é uma relação N-N.
+### Esqueleto do schema
+O que é um livro?
+
+Um livro é um objeto.
+
+Um objeto, para ser instancidado, precisa de uma classe. 
+```Python
+class Livro:
+    def __init__(self, isbn, titulo): # construtor
+        self.isbn= isbn
+        self.titulo= titulo
+```
+Agora, vamos instanciá-lo:
+```Python
+livros = [Livro(isbn="123", titulo="Vidas Secas")]
+```
+Poxa, conforme escrevemos os atributos, a IDE não nos diz qual o tipo dos atributos...
+
+Então, vamos substituí-lo por um BaseModel do pydantic na classe:
+```Python
+from pydantic import BaseModel
+class Livro(BaseModel):
+	isbn: str
+	titulo: str
+```
+
+Podia ser um @dataclass também, assim:
+
+```Python
+from dataclassesimport dataclass
+class Livro(BaseModel):
+	isbn: str
+	titulo: str
+```
+Mas como o FastAPI diz que o pydantic é legal, vamos usar o pydantic.
+
+E já que criamos o schema, vamos usá-lo para servir de exemplo no Swagger.
+
+No final, nosso código inteiro estará assim:
+```Python
+# main.py
+from fastapi import FastAPI
+
+from pydantic import BaseModel
+
+from typing import List
+
+app = FastAPI()
+
+
+class Livro(BaseModel):
+    isbn: str
+    titulo: str
+
+
+@app.get("/livros", tags=["Livros"], response_model=List[Livro])
+def main():
+    livros = [Livro(isbn="123", titulo="Vidas Secas"),
+              Livro(isbn="321", titulo="Os Sertoes")]
+    return livros
+```
+Vamos criar um arquivo chamado **schemas.py** para guardar os schemas?
+```Python
+# schemas.py
+from pydantic import BaseModel
+
+class AutorSchema(BaseModel):
+    cpf: str
+    nome: str
+
+class LivroSchema(BaseModel):
+    isbn: str
+    titulo: str
+```
+Assim, o **main.py** fica mais enxuto:
+```Python
+# main.py
+from typing import List
+
+from fastapi import FastAPI
+
+import schemas
+
+app = FastAPI()
+
+
+@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+def main():
+    livros = [schemas.Livro(isbn="123", titulo="Vidas Secas"),
+              schemas.Livro(isbn="321", titulo="Os Sertoes")]
+    return livros
+```
+### Esqueleto dos models
+Vamos falar sobre o elefante branco na sala. Vamos falar do SGBD.
+
+Bom, antes de fazer esse tutorial, eu nunca tinha usado o SQLAlchemy. Fiz um experimento sem relação com o FastAPI e ele está nesse repositório dentro de utils/database.py
+
 
 
 ## Troubleshooting
