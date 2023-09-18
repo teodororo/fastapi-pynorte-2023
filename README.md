@@ -21,14 +21,15 @@ pip3 install sqlalchemy
 	- [Dividindo as rotas com _tags_](#dividindo-as-rotas-com-tags)
 - [CRUD](#crud)
   	- [Esqueleto do schema](#esqueleto-do-schema)
+  	- [Esqueleto dos models](#esqueleto-dos-models)
+  	- [CRUD real oficial](#crud-real-oficial)
+  	 	- [Injeção de dependência](#injeção-de-dependência)
 - [Troubleshooting](#troubleshooting)
-
-```Python
-```
 
 
 ## Hello, world!
 ```Python
+# main.py
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -67,8 +68,10 @@ Continuando, se rodarmos:
 pytest --cov=. --cov-report=html
 ```
 E abrimos o diretório "htmlcov", o arquivo "main_py.html" irá nos informar que nada foi testado.
-Então, crie um arquivo chamado "test_hello_world.py" e copie o seguinte _script_:
+
+Então, crie um arquivo chamado "test_get.py" e copie o seguinte _script_:
 ```Python
+# test_get.py
 from fastapi.testclient import TestClient
 from main import app
 
@@ -82,10 +85,11 @@ Agora, ao rodar o comando:
 ```console
 pytest --cov=. --cov-report=html
 ```
-O "main_py.html" estará todo verde.
+O "main_py.html" estará todo verde. Eba.
 ### Marcando rotas descontinuadas
 É possível marcar uma rota como descontinuada.
 ```Python
+# main.py
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -99,6 +103,7 @@ def main():
 
 Lembrando, a ordem de escrita das rotas importa.
 ```Python
+# main.py
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -235,8 +240,150 @@ Vamos falar sobre o elefante branco na sala. Vamos falar do SGBD.
 
 Bom, antes de fazer esse tutorial, eu nunca tinha usado o SQLAlchemy. Fiz um experimento sem relação com o FastAPI e ele está nesse repositório dentro de utils/database.py
 
+Enfim, como não é o objetivo do tutorial, vamos apenas copiar e colar os trechos de código abaixo e salvá-los na raiz:
+
+```Python
+# database.py
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+engine = create_engine('sqlite:///data.db', echo=True)
+
+SessionLocal = sessionmaker(bind=engine)
+
+Base = declarative_base()
+```
+
+```Python
+# models.py
+from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy.orm import relationship
+
+from database import Base
 
 
+class Autor(Base):
+    __tablename__ = 'autores'
+    cpf = Column(String, primary_key=True)
+    nome = Column(String)
+    livros = relationship('Livro', secondary='livro_autor',
+                          back_populates='autores')
+
+
+class Livro(Base):
+    __tablename__ = 'livros'
+    isbn = Column(String, primary_key=True)
+    titulo = Column(String)
+    autores = relationship(
+        'Autor', secondary='livro_autor', back_populates='livros')
+
+
+class LivroAutor(Base):
+    __tablename__ = 'livro_autor'
+    livro_isbn = Column(String, ForeignKey('livros.isbn'), primary_key=True)
+    autor_cpf = Column(String, ForeignKey('autores.cpf'), primary_key=True)
+```
+Easy.
+Aqui como vai ficar o **main.py**:
+```Python
+# main.py
+from typing import List
+from fastapi import FastAPI
+
+import schemas
+import models
+
+from sqlalchemy.orm import Session
+from database import SessionLocal, engine
+
+models.Base.metadata.create_all(bind=engine)
+
+def get_db():  # dependencia
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+app = FastAPI()
+
+
+@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+def main():
+    livros = [schemas.Livro(isbn="123", titulo="Vidas Secas"),
+              schemas.Livro(isbn="321", titulo="Os Sertoes")]
+    return livros
+```
+### CRUD real oficial
+Agora vamos escrever as rotas que faltam e conectá-las à base de dados.
+#### Injeção de dependência
+É preciso que a base de dados exista antes que você faça um CRUD nela. No entanto, se adicionarmos algo como:
+```Python
+@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+def main(db: Session = get_db()):
+    livros = db.query(models.Livro).all()
+    return livros
+```
+Vai dar erro porque ele está esperando um objeto, não uma função. Vamos, então, usar o _Depends_ do FastAPI. Nosso **main.py** vai ficar assim, ó:
+```Python
+from typing import List
+from fastapi import FastAPI, Depends
+
+import schemas
+import models
+
+from sqlalchemy.orm import Session
+from database import SessionLocal, engine
+
+models.Base.metadata.create_all(bind=engine)
+
+def get_db():  # dependencia
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+app = FastAPI()
+
+
+@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+def main(db: Session = Depends(get_db)):
+    livros = db.query(models.Livro).all()
+    return livros
+```
+E, se testarmos, vai retornar [] porque não tem nada lá. Ainda não fizemos o post.
+
+Enfim, vamos cuidar disso depois. O que importa Depends() é forte. É com ele que conseguimos, por exemplo, fazer a validação do CPF (também é preciso ter fé).
+```Python
+from typing import List
+from fastapi import FastAPI, Depends
+
+import schemas
+import models
+
+from sqlalchemy.orm import Session
+from database import SessionLocal, engine
+
+models.Base.metadata.create_all(bind=engine)
+
+def get_db():  # dependencia
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+app = FastAPI()
+
+
+@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+def main(db: Session = Depends(get_db)):
+    livros = db.query(models.Livro).all()
+    return livros
+```
+###
 ## Troubleshooting
 Para parar o FastAPI:
 
