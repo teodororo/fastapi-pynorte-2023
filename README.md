@@ -24,6 +24,7 @@ pip3 install sqlalchemy
   	- [Esqueleto dos models](#esqueleto-dos-models)
   	- [CRUD real oficial](#crud-real-oficial)
   	 	- [Injeção de dependência](#injeção-de-dependência)
+  		- [Parâmetros do path](#parâmetros-do-path)
 - [Troubleshooting](#troubleshooting)
 
 
@@ -356,34 +357,8 @@ def main(db: Session = Depends(get_db)):
 E, se testarmos, vai retornar [] porque não tem nada lá. Ainda não fizemos o post.
 
 Enfim, vamos cuidar disso depois. O que importa Depends() é forte. É com ele que conseguimos, por exemplo, fazer a validação do CPF (também é preciso ter fé).
-```Python
-from typing import List
-from fastapi import FastAPI, Depends
 
-import schemas
-import models
-
-from sqlalchemy.orm import Session
-from database import SessionLocal, engine
-
-models.Base.metadata.create_all(bind=engine)
-
-def get_db():  # dependencia
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-app = FastAPI()
-
-
-@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
-def main(db: Session = Depends(get_db)):
-    livros = db.query(models.Livro).all()
-    return livros
-```
-###
+#### Parâmetros do path
 ## Troubleshooting
 Para parar o FastAPI:
 
