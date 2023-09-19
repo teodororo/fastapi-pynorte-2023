@@ -2,11 +2,11 @@
 
 **Opção 1**
 ```Python
-if pupunha:
+if pupunha == True:
 ```
 **Opção 2**
 ```Python
-if pupunha == True:
+if pupunha:
 ```
 **Opção 3**
 ```Python
@@ -58,6 +58,32 @@ resultado = minha_funcao_que_aceita_varios_parametros(
     'd', 'e', 'f',
     )
 ```
+**Opção 3**
+```Python
+resultado = minha_funcao_que_aceita_varios_parametros(
+    'a', 'b', 'c',
+    'd', 'e', 'f',)
+minha_lista = [
+    1, 2, 3,
+    4, 5, 6]
+```
+**Opção 1**
+```Python
+rendimento = (salario_bruto
+              + juros
+              + (dividendos - dividendos_especiais)
+              - impostos
+              - emprestimo)
+```
+**Opção 2**
+```Python
+rendimento = (salario_bruto +
+              juros +
+              (dividendos - dividendos_especiais) -
+              impostos -
+              emprestimo)
+```
+
 # FastAPI de cabo a rabo
 Código e slides do workshop apresentado na Python Norte 2023.
 
