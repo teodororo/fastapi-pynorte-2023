@@ -25,6 +25,7 @@ pip3 install sqlalchemy
   	- [CRUD real oficial](#crud-real-oficial)
   	 	- [Injeção de dependência](#injeção-de-dependência)
   		- [Parâmetros do path](#parâmetros-do-path)
+  	   	- [Parse de schema para model](#parse-de-schema-para-model)
 - [Troubleshooting](#troubleshooting)
 
 
@@ -41,11 +42,11 @@ def main():
 ```
 Para executar, assumindo que o arquivo se chama "main.py":
 ```console
-uvicorn main:app --reload
+python3 -m uvicorn main:app --reload
 ```
 Caso queira rodar em segundo plano, adicione "&" no final do comando. Há outras opções de parâmetros, por exemplo:
 ```console
-uvicorn main:app --reload --host 0.0.0.0 --port 88 --workers 4 ... &
+python3 -m uvicorn main:app --reload --host 0.0.0.0 --port 88 --workers 4 ... &
 ```
 Saiba mais na [documentação oficial do Uvicorn](https://www.uvicorn.org/).
 
@@ -359,6 +360,30 @@ E, se testarmos, vai retornar [] porque não tem nada lá. Ainda não fizemos o 
 Enfim, vamos cuidar disso depois. O que importa Depends() é forte. É com ele que conseguimos, por exemplo, fazer a validação do CPF (também é preciso ter fé).
 
 #### Parâmetros do path
+Antes do post, vamos aproveitar que ainda estamos no get e fazer um exemplo de query pelos parâmetros do _path_. Por exemplo, um limite de itens. O front sempre pede isso.
+```Python
+@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+def get_livros(db: Session = Depends(get_db),limit:int = 10):
+    livros = db.query(models.Livro).all()
+    return livros[:limit:]
+```
+Legal. Sabe mais o que dá para fazer? Um Enum. O front sempre pede isso.
+```Python
+from enum import Enum
+
+class Livros(Enum):
+    vidas_secas = 'Vidas Secas'
+    os_sertoes = 'Os Sertoes'
+
+@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+def get_livros(livros: Livros,db: Session = Depends(get_db),limit:int = 10):
+    livros = db.query(models.Livro).all()
+    return livros[:limit:]
+```
+Ok, chega.
+#### Parse de schema para model
+
+
 ## Troubleshooting
 Para parar o FastAPI:
 
