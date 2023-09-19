@@ -26,6 +26,7 @@ pip3 install sqlalchemy
   	 	- [Injeção de dependência](#injeção-de-dependência)
   		- [Parâmetros do path](#parâmetros-do-path)
   	   	- [Parse de schema para model](#parse-de-schema-para-model)
+  	   	- []
 - [Troubleshooting](#troubleshooting)
 
 
@@ -382,7 +383,7 @@ def get_livros(livros: Livros,db: Session = Depends(get_db),limit:int = 10):
 ```
 Ok, chega.
 #### Parse de schema para model
-
+Tenho certeza que não vai dar para explicar isso no tutorial. Mas, assim, para instanciar um "Livro" no banco de dados é assim:
 
 ## Troubleshooting
 Para parar o FastAPI:
