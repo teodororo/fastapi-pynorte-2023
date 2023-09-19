@@ -1,14 +1,14 @@
 # Teste PEP-8
 
-Opção 1
+**Opção 1**
 ```Python
 if pupunha:
 ```
-Opção 2
+**Opção 2**
 ```Python
 if pupunha == True:
 ```
-Opção 3
+**Opção 3**
 ```Python
 if pupunha is True:
 ```
