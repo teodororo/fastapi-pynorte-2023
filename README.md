@@ -13,6 +13,15 @@ if pupunha:
 if pupunha is True:
 ```
 
+**Opção 1**
+```Python
+if not foo is None:
+```
+**Opção 2**
+```Python
+if pupunha is not None:
+```
+
 
 **Opção 1**
 ```Python
@@ -25,15 +34,6 @@ if pupunha is True:
 >> f = lambda x: 2*x
 >> f(2)
 4
-```
-
-**Opção 1**
-```Python
-if not foo is None:
-```
-**Opção 2**
-```Python
-if pupunha is not None:
 ```
 
 
