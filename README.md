@@ -92,6 +92,7 @@ rendimento = (salario_bruto +
 ```Python
 palavra = 'pupunha'
 ```
+**Opção 2**
 ```Python
 palavra = "pupunha"
 ```
