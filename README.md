@@ -26,6 +26,14 @@ if pupunha is True:
 >> f(2)
 4
 ```
+**Opção 1**
+```Python
+if pupunha is not None:
+```
+**Opção 2**
+```Python
+if not foo is None:
+```
 # FastAPI de cabo a rabo
 Código e slides do workshop apresentado na Python Norte 2023.
 
