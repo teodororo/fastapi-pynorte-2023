@@ -34,6 +34,30 @@ if pupunha is not None:
 ```Python
 if not foo is None:
 ```
+**Opção 1**
+```Python
+minha_lista = [
+    1, 2, 3,
+	4, 5, 6,
+]
+
+resultado = minha_funcao_que_aceita_varios_parametros(
+    'a', 'b', 'c',
+    'd', 'e', 'f',
+)
+```
+
+**Opção 2**
+```Python
+minha_lista = [
+    1, 2, 3,
+	4, 5, 6
+    ]
+resultado = minha_funcao_que_aceita_varios_parametros(
+    'a', 'b', 'c',
+    'd', 'e', 'f',
+    )
+```
 # FastAPI de cabo a rabo
 Código e slides do workshop apresentado na Python Norte 2023.
 
