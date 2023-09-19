@@ -26,14 +26,17 @@ if pupunha is True:
 >> f(2)
 4
 ```
+
 **Opção 1**
-```Python
-if pupunha is not None:
-```
-**Opção 2**
 ```Python
 if not foo is None:
 ```
+**Opção 2**
+```Python
+if pupunha is not None:
+```
+
+
 **Opção 1**
 ```Python
 minha_lista = [
@@ -46,7 +49,6 @@ resultado = minha_funcao_que_aceita_varios_parametros(
     'd', 'e', 'f',
 )
 ```
-
 **Opção 2**
 ```Python
 minha_lista = [
@@ -67,6 +69,8 @@ minha_lista = [
     1, 2, 3,
     4, 5, 6]
 ```
+
+
 **Opção 1**
 ```Python
 rendimento = (salario_bruto
