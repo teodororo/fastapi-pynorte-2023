@@ -15,11 +15,11 @@ resultado = minha_funcao_que_aceita_varios_parametros(
 minha_lista = [
     1, 2, 3,
     4, 5, 6,
-    ]
+]
 resultado = minha_funcao_que_aceita_varios_parametros(
     'a', 'b', 'c',
     'd', 'e', 'f',
-    )
+)
 ```
 
 # FastAPI de cabo a rabo
