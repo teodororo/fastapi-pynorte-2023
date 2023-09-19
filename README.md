@@ -88,6 +88,13 @@ rendimento = (salario_bruto +
               emprestimo)
 ```
 
+**Opção 1**
+```Python
+palavra = 'pupunha'
+```
+```Python
+palavra = "pupunha"
+```
 # FastAPI de cabo a rabo
 Código e slides do workshop apresentado na Python Norte 2023.
 
