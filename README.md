@@ -1,3 +1,18 @@
+# Teste PEP-8
+
+Opção 1
+```Python
+if pupunha:
+```
+Opção 2
+```Python
+if pupunha == True:
+```
+Opção 3
+```Python
+if pupunha is True:
+```
+
 # FastAPI de cabo a rabo
 Código e slides do workshop apresentado na Python Norte 2023.
 
