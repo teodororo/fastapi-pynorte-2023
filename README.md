@@ -13,6 +13,19 @@ if pupunha == True:
 if pupunha is True:
 ```
 
+
+**Opção 1**
+```Python
+>> def f(x): return 2*x:
+>> f(2)
+4
+```
+**Opção 2**
+```Python
+>> f = lambda x: 2*x
+>> f(2)
+4
+```
 # FastAPI de cabo a rabo
 Código e slides do workshop apresentado na Python Norte 2023.
 
