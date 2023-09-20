@@ -1,27 +1,3 @@
-
-
-**Opção 1**
-```Python
-minha_lista = [
-    1, 2, 3,
-    4, 5, 6,
-]
-resultado = minha_funcao_que_aceita_varios_parametros(
-    'a', 'b', 'c',
-    'd', 'e', 'f',
-)
-```
-**Opção 2**
-```Python
-minha_lista = [
-    1, 2, 3,
-    4, 5, 6,
-    ]
-resultado = minha_funcao_que_aceita_varios_parametros(
-    'a', 'b', 'c',
-    'd', 'e', 'f',
-    )
-```
 # FastAPI de cabo a rabo
 Código e slides do workshop apresentado na Python Norte 2023.
 
@@ -50,7 +26,8 @@ pip3 install sqlalchemy
   	 	- [Injeção de dependência](#injeção-de-dependência)
   		- [Parâmetros do path](#parâmetros-do-path)
   	   	- [Parse de schema para model](#parse-de-schema-para-model)
-  	   	- []
+  	   	- [Delete](#delete)
+  	   	- [Ctrl c + ctrl v para o resto](#ctrl-c-+-ctrl-v-para-o-resto)
 - [Troubleshooting](#troubleshooting)
 
 
@@ -251,15 +228,15 @@ from typing import List
 
 from fastapi import FastAPI
 
-import schemas
+from schemas import AutorSchema, LivroSchema
 
 app = FastAPI()
 
 
-@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+@app.get("/livros", tags=["Livros"], response_model=List[LivroSchema])
 def main():
-    livros = [schemas.Livro(isbn="123", titulo="Vidas Secas"),
-              schemas.Livro(isbn="321", titulo="Os Sertoes")]
+    livros = [LivroSchema(isbn="123", titulo="Vidas Secas"),
+              LivroSchema(isbn="321", titulo="Os Sertoes")]
     return livros
 ```
 ### Esqueleto dos models
@@ -290,7 +267,7 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
-class Autor(Base):
+class AutorModel(Base):
     __tablename__ = 'autores'
     cpf = Column(String, primary_key=True)
     nome = Column(String)
@@ -298,7 +275,7 @@ class Autor(Base):
                           back_populates='autores')
 
 
-class Livro(Base):
+class LivroModel(Base):
     __tablename__ = 'livros'
     isbn = Column(String, primary_key=True)
     titulo = Column(String)
@@ -306,7 +283,7 @@ class Livro(Base):
         'Autor', secondary='livro_autor', back_populates='livros')
 
 
-class LivroAutor(Base):
+class LivroAutorModel(Base):
     __tablename__ = 'livro_autor'
     livro_isbn = Column(String, ForeignKey('livros.isbn'), primary_key=True)
     autor_cpf = Column(String, ForeignKey('autores.cpf'), primary_key=True)
@@ -318,13 +295,13 @@ Aqui como vai ficar o **main.py**:
 from typing import List
 from fastapi import FastAPI
 
-import schemas
-import models
+from schemas import AutorSchema, LivroSchema
+from models import AutorModel, LivroModel, Base
 
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 def get_db():  # dependencia
     db = SessionLocal()
@@ -336,10 +313,10 @@ def get_db():  # dependencia
 app = FastAPI()
 
 
-@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+@app.get("/livros", tags=["Livros"], response_model=List[LivroSchema])
 def main():
-    livros = [schemas.Livro(isbn="123", titulo="Vidas Secas"),
-              schemas.Livro(isbn="321", titulo="Os Sertoes")]
+    livros = [LivroSchema(isbn="123", titulo="Vidas Secas"),
+              LivroSchema(isbn="321", titulo="Os Sertoes")]
     return livros
 ```
 ### CRUD real oficial
@@ -347,9 +324,9 @@ Agora vamos escrever as rotas que faltam e conectá-las à base de dados.
 #### Injeção de dependência
 É preciso que a base de dados exista antes que você faça um CRUD nela. No entanto, se adicionarmos algo como:
 ```Python
-@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+@app.get("/livros", tags=["Livros"], response_model=List[LivroSchema])
 def main(db: Session = get_db()):
-    livros = db.query(models.Livro).all()
+    livros = db.query(LivroModel).all()
     return livros
 ```
 Vai dar erro porque ele está esperando um objeto, não uma função. Vamos, então, usar o _Depends_ do FastAPI. Nosso **main.py** vai ficar assim, ó:
@@ -357,8 +334,8 @@ Vai dar erro porque ele está esperando um objeto, não uma função. Vamos, ent
 from typing import List
 from fastapi import FastAPI, Depends
 
-import schemas
-import models
+from schemas import AutorSchema, LivroSchema
+from models import AutorModel, LivroModel, Base
 
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
@@ -375,9 +352,9 @@ def get_db():  # dependencia
 app = FastAPI()
 
 
-@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+@app.get("/livros", tags=["Livros"], response_model=List[LivroSchema])
 def main(db: Session = Depends(get_db)):
-    livros = db.query(models.Livro).all()
+    livros = db.query(LivroModel).all()
     return livros
 ```
 E, se testarmos, vai retornar [] porque não tem nada lá. Ainda não fizemos o post.
@@ -387,9 +364,9 @@ Enfim, vamos cuidar disso depois. O que importa Depends() é forte. É com ele q
 #### Parâmetros do path
 Antes do post, vamos aproveitar que ainda estamos no get e fazer um exemplo de query pelos parâmetros do _path_. Por exemplo, um limite de itens. O front sempre pede isso.
 ```Python
-@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+@app.get("/livros", tags=["Livros"], response_model=List[LivroSchema])
 def get_livros(db: Session = Depends(get_db),limit:int = 10):
-    livros = db.query(models.Livro).all()
+    livros = db.query(LivroModel).all()
     return livros[:limit:]
 ```
 Legal. Sabe mais o que dá para fazer? Um Enum. O front sempre pede isso.
@@ -400,14 +377,118 @@ class Livros(Enum):
     vidas_secas = 'Vidas Secas'
     os_sertoes = 'Os Sertoes'
 
-@app.get("/livros", tags=["Livros"], response_model=List[schemas.Livro])
+@app.get("/livros", tags=["Livros"], response_model=List[LivroSchema])
 def get_livros(livros: Livros,db: Session = Depends(get_db),limit:int = 10):
-    livros = db.query(models.Livro).all()
+    livros = db.query(LivroModel).all()
     return livros[:limit:]
 ```
 Ok, chega.
 #### Parse de schema para model
-Tenho certeza que não vai dar para explicar isso no tutorial. Mas, assim, para instanciar um "Livro" no banco de dados é assim:
+Tenho certeza que não vai dar para explicar isso no tutorial. Mas, assim, para instanciar um "Livro" no banco de dados com SQLAlchemy é assim:
+```Python
+livro = Livro(isbn='978-1234567890', titulo='Livro 1')
+```
+Ou seja, é só passar o que tá no schema para o model, assim:
+```Python
+@app.post("/livros", tags=["Livros"], response_model=LivroSchema)
+def post_livros(livro: LivroSchema, db: Session = Depends(get_db)):
+    isbn_schema = livro.isbn
+    titulo_schema = livro.titulo
+    livro_model = LivroModel(isbn=isbn_schema, titulo=titulo_schema)
+    db.add(livro_model)
+    db.commit()
+    return livro
+```
+Agora, o delete.
+#### Delete
+```Python
+@app.delete("/livros/{isbn}")
+def delete_livro(isbn: str, db: Session = Depends(get_db)):
+    livro = db.query(LivroModel).filter(LivroModel.isbn == isbn).first()
+    if livro is None:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
+    db.delete(livro)
+    db.commit()
+    return {"message": "Livro deletado com sucesso"}
+```
+#### Ctrl c + ctrl v para o resto
+Assim.
+
+As rotas seguem o mesmo estilo, só precisa ajeitar algumas coisas. Vamos reaproveitar tudo para fazer as rotas dos autores.
+```Python
+from typing import List
+from fastapi import FastAPI, Depends, HTTPException
+from schemas import LivroSchema, AutorSchema
+from models import Base, LivroModel, AutorModel
+
+from sqlalchemy.orm import Session
+from database import SessionLocal, engine
+
+Base.metadata.create_all(bind=engine)
+
+
+def get_db():  # dependencia
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+app = FastAPI()
+
+
+@app.get("/livros", tags=["Livros"], response_model=List[LivroSchema])
+def get_livros(db: Session = Depends(get_db), limit: int = 10):
+    livros = db.query(LivroModel).all()
+    return livros[:limit:]
+
+
+@app.post("/livros", tags=["Livros"], response_model=LivroSchema)
+def post_livros(livro: LivroSchema, db: Session = Depends(get_db)):
+    isbn_schema = livro.isbn
+    titulo_schema = livro.titulo
+    livro_model = LivroModel(isbn=isbn_schema, titulo=titulo_schema)
+    db.add(livro_model)
+    db.commit()
+    return livro
+
+
+@app.delete("/livros/{isbn}", tags=["Livros"])
+def delete_livro(isbn: str, db: Session = Depends(get_db)):
+    livro = db.query(LivroModel).filter(LivroModel.isbn == isbn).first()
+    if livro is None:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
+    db.delete(livro)
+    db.commit()
+    return {"message": "Livro deletado com sucesso"}
+
+
+@app.get("/autores", tags=["Autores"], response_model=List[AutorSchema])
+def get_autores(db: Session = Depends(get_db), limit: int = 10):
+    autores = db.query(AutorModel).all()
+    return autores[:limit:]
+
+
+@app.post("/autores", tags=["Autores"], response_model=AutorSchema)
+def post_autores(autor: AutorSchema, db: Session = Depends(get_db)):
+    cpf_schema = autor.cpf
+    nome_schema = autor.nome
+    autor_model = AutorModel(cpf=cpf_schema, nome=nome_schema)
+    db.add(autor_model)
+    db.commit()
+    return autor
+
+
+@app.delete("/autores/{cpf}", tags=["Autores"])
+def delete_autores(cpf: str, db: Session = Depends(get_db)):
+    autor = db.query(AutorModel).filter(AutorModel.cpf == cpf).first()
+    if autor is None:
+        raise HTTPException(status_code=404, detail="Autor não encontrado")
+    db.delete(autor)
+    db.commit()
+    return {"message": "Autor deletado com sucesso"}
+```
 
 ## Troubleshooting
 Para parar o FastAPI:
