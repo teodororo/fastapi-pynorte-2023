@@ -1,3 +1,8 @@
+```Python
+[tool.ruff]
+line-length: 88
+```
+
 # FastAPI de cabo a rabo
 Código e slides do workshop apresentado na Python Norte 2023.
 
