@@ -4,6 +4,12 @@ line-length: 88
 ```
 **Opção 1**
 ```Python
+def get_pupunha(amigos, familia, irmaos, colegas, vizinhos, cachorros, gatos, fantasmas):
+    pass
+```
+
+**Opção 2**
+```Python
 def get_pupunha(amigos,
                 familia,
                 irmaos,
@@ -12,11 +18,6 @@ def get_pupunha(amigos,
                 cachorros,
                 gatos,
                 fantasmas):
-    pass
-```
-**Opção 2**
-```Python
-def get_pupunha(amigos, familia, irmaos, colegas, vizinhos, cachorros, gatos, fantasmas):
     pass
 ```
 **Opção 3**
