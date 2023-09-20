@@ -416,6 +416,7 @@ Assim.
 
 As rotas seguem o mesmo estilo, só precisa ajeitar algumas coisas. Vamos reaproveitar tudo para fazer as rotas dos autores.
 ```Python
+# main.py
 from typing import List
 from fastapi import FastAPI, Depends, HTTPException
 from schemas import LivroSchema, AutorSchema
@@ -489,6 +490,124 @@ def delete_autores(cpf: str, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Autor deletado com sucesso"}
 ```
+#### Refatoração
+Um main.py muito longo é feio.
+O FastAPI fornece um negócio chamado APIRouter() que é como se fosse uma instância do FastAPI.
+Com o APIRouter(), dá para separar em arquivos cada conjunto de rotas. Se você consome de diferentes banco de dados, isso é particularmente útil.
+
+Primeiro, vamos criar dois arquivos: **autor_routes.py** e **livro_routes.py**.
+Lá, copie e cole tudo que está no **main.py** considerando apenas as rotas correspondentes. 
+Substitua ```app = FastAPI()``` por ```livro_router = APIRouter()```, por exemplo.
+```Python
+# livro_routes.py
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException
+from schemas import LivroSchema
+from models import Base, LivroModel
+
+from sqlalchemy.orm import Session
+from database import SessionLocal, engine
+
+Base.metadata.create_all(bind=engine)
+
+
+def get_db():  # dependencia
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+livro_router = APIRouter()
+
+@livro_router.get("/livros", tags=["Livros"], response_model=List[LivroSchema])
+def get_livros(db: Session = Depends(get_db), limit: int = 10):
+    livros = db.query(LivroModel).all()
+    return livros[:limit:]
+
+
+@livro_router.post("/livros", tags=["Livros"], response_model=LivroSchema)
+def post_livros(livro: LivroSchema, db: Session = Depends(get_db)):
+    isbn_schema = livro.isbn
+    titulo_schema = livro.titulo
+    livro_model = LivroModel(isbn=isbn_schema, titulo=titulo_schema)
+    db.add(livro_model)
+    db.commit()
+    return livro
+
+
+@livro_router.delete("/livros/{isbn}", tags=["Livros"])
+def delete_livro(isbn: str, db: Session = Depends(get_db)):
+    livro = db.query(LivroModel).filter(LivroModel.isbn == isbn).first()
+    if livro is None:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
+    db.delete(livro)
+    db.commit()
+    return {"message": "Livro deletado com sucesso"}
+```
+```Python
+# autor_routes.py
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException
+from schemas import AutorSchema
+from models import Base, AutorModel
+
+from sqlalchemy.orm import Session
+from database import SessionLocal, engine
+
+Base.metadata.create_all(bind=engine)
+
+
+def get_db():  # dependencia
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+autor_router = APIRouter()
+
+
+@autor_router.get("/autores", tags=["Autores"], response_model=List[AutorSchema])
+def get_autores(db: Session = Depends(get_db), limit: int = 10):
+    autores = db.query(AutorModel).all()
+    return autores[:limit:]
+
+
+@autor_router.post("/autores", tags=["Autores"], response_model=AutorSchema)
+def post_autores(autor: AutorSchema, db: Session = Depends(get_db)):
+    cpf_schema = autor.cpf
+    nome_schema = autor.nome
+    autor_model = AutorModel(cpf=cpf_schema, nome=nome_schema)
+    db.add(autor_model)
+    db.commit()
+    return autor
+
+
+@autor_router.delete("/autores/{cpf}", tags=["Autores"])
+def delete_autores(cpf: str, db: Session = Depends(get_db)):
+    autor = db.query(AutorModel).filter(AutorModel.cpf == cpf).first()
+    if autor is None:
+        raise HTTPException(status_code=404, detail="Autor não encontrado")
+    db.delete(autor)
+    db.commit()
+    return {"message": "Autor deletado com sucesso"}
+``` 
+Agora, ajeite o **main.py** fazendo o FastAPI incluir as novas rotas.
+``` Python
+from fastapi import FastAPI
+
+from autor_routes import autor_router
+from livro_routes import livro_router
+
+
+app = FastAPI()
+
+app.include_router(autor_router)
+app.include_router(livro_router)
+```
+Prontinho. Eba.
 
 ## Troubleshooting
 Para parar o FastAPI:
