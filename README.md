@@ -28,6 +28,7 @@ pip3 install sqlalchemy
   	   	- [Parse de schema para model](#parse-de-schema-para-model)
   	   	- [Delete](#delete)
   	   	- [Ctrl c + ctrl v para o resto](#ctrl-c-+-ctrl-v-para-o-resto)
+  	   	- [Refatoração](#refatoração)
 - [Troubleshooting](#troubleshooting)
 
 
@@ -596,6 +597,7 @@ def delete_autores(cpf: str, db: Session = Depends(get_db)):
 ``` 
 Agora, ajeite o **main.py** fazendo o FastAPI incluir as novas rotas.
 ``` Python
+# main.py
 from fastapi import FastAPI
 
 from autor_routes import autor_router
