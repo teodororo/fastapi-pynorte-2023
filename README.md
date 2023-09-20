@@ -1,4 +1,4 @@
-```Docker
+```yaml
 [tool.ruff]
 line-length: 88
 ```
