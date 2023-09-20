@@ -2,6 +2,55 @@
 [tool.ruff]
 line-length: 88
 ```
+**Opção 1**
+```Python
+def get_pupunha(amigos,
+                familia,
+                irmaos,
+                colegas,
+                vizinhos,
+                cachorros,
+                gatos,
+                fantasmas):
+    pass
+```
+**Opção 2**
+```Python
+def get_pupunha(amigos, familia, irmaos, colegas, vizinhos, cachorros, gatos, fantasmas):
+    pass
+```
+**Opção 3**
+```Python
+def get_pupunha(amigos, familia, irmaos,
+                colegas, vizinhos, cachorros,
+                gatos, fantasmas):
+    pass
+```
+
+
+
+**Opção 1**
+```Python
+def funcao_pupunha():
+    pass
+```
+**Opção 2**
+```Python
+def funcaoPupunha():
+    pass
+```
+
+
+**Opção 1**
+```Python
+variavel_pupunha = None
+```
+**Opção 2**
+```Python
+variavelPupunha = None
+```
+
+
 
 # FastAPI de cabo a rabo
 Código e slides do workshop apresentado na Python Norte 2023.
