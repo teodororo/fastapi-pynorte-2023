@@ -332,6 +332,7 @@ def main(db: Session = get_db()):
 ```
 Vai dar erro porque ele está esperando um objeto, não uma função. Vamos, então, usar o _Depends_ do FastAPI. Nosso **main.py** vai ficar assim, ó:
 ```Python
+# main.py
 from typing import List
 from fastapi import FastAPI, Depends
 
