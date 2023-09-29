@@ -1,4 +1,4 @@
-# SCRIPT JUST IN CASE I FORGOT SOMETHING - ITS NOT SUPOSSED TO BE USED
+# script para entender a database - nao tem nada a ver com fastapi
 from sqlalchemy import create_engine, Column, String, ForeignKey
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
