@@ -272,7 +272,7 @@ class AutorModel(Base):
     __tablename__ = 'autores'
     cpf = Column(String, primary_key=True)
     nome = Column(String)
-    livros = relationship('Livro', secondary='livro_autor',
+    livros = relationship('LivroModel', secondary='livro_autor',
                           back_populates='autores')
 
 
@@ -281,7 +281,7 @@ class LivroModel(Base):
     isbn = Column(String, primary_key=True)
     titulo = Column(String)
     autores = relationship(
-        'Autor', secondary='livro_autor', back_populates='livros')
+        'AutorModel', secondary='livro_autor', back_populates='livros')
 
 
 class LivroAutorModel(Base):
